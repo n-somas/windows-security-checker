@@ -16,6 +16,7 @@ Das Tool prüft aktuell:
 - Microsoft Defender
 - Windows-Firewall
 - lokale Administratoren
+- BitLocker-Status
 - offene TCP-Ports
 - Risikobewertung bekannter Ports
 
@@ -33,6 +34,7 @@ Es zeigt Kenntnisse in:
 - PowerShell-Integration
 - Windows-Sicherheitsprüfung
 - Auswertung von Systeminformationen
+- Prüfung von Windows-Sicherheitsfunktionen
 - Port-Analyse
 - Berichtserstellung
 - Git- und GitHub-Projektstruktur
@@ -70,7 +72,7 @@ python src/main.py
 ```text
 Windows Security Checker
 ==============================
-Version: 0.3.0
+Version: 0.4.0
 
 OK - Systeminformationen
      Die Systeminformationen wurden erfolgreich ausgelesen.
@@ -84,6 +86,9 @@ OK - Windows-Firewall
 OK - Lokale Administratoren
      Es wurden 2 lokale Administratoren oder Administratorgruppen gefunden.
 
+WARNUNG - BitLocker
+     Es wurden keine BitLocker-Volumes gefunden.
+
 INFO - Offene TCP-Ports
      Es wurden offene TCP-Ports gefunden. Bekannte Ports wurden bewertet.
 
@@ -91,7 +96,7 @@ Zusammenfassung
 ------------------------------
 OK: 3
 Info: 1
-Warnungen: 1
+Warnungen: 2
 Kritisch: 0
 Fehler: 0
 ```
@@ -165,6 +170,27 @@ Das ist wichtig, weil zu viele lokale Administratoren das Risiko bei kompromitti
 
 ---
 
+### BitLocker
+
+Prüft den BitLocker-Status vorhandener Laufwerke.
+
+BitLocker schützt Daten bei Verlust oder Diebstahl des Geräts. Besonders wichtig ist die Verschlüsselung des Systemlaufwerks.
+
+Das Tool bewertet unter anderem:
+
+- ob BitLocker-Volumes vorhanden sind
+- ob Laufwerke vollständig verschlüsselt sind
+- ob der BitLocker-Schutz aktiv ist
+- ob die Verschlüsselung noch läuft oder pausiert ist
+
+Beispiel für eine Warnung:
+
+```text
+Es wurden keine BitLocker-Volumes gefunden.
+```
+
+---
+
 ### Offene TCP-Ports
 
 Listet offene TCP-Ports im Status `LISTEN` auf.
@@ -202,8 +228,8 @@ Es werden zwei Formate erzeugt:
 Beispiel:
 
 ```text
-reports/sicherheitsbericht_2026-05-18_06-06-01.json
-reports/sicherheitsbericht_2026-05-18_06-06-01.txt
+reports/sicherheitsbericht_2026-05-18_06-25-52.json
+reports/sicherheitsbericht_2026-05-18_06-25-52.txt
 ```
 
 ---
@@ -215,10 +241,11 @@ Die erzeugten Berichte können Systeminformationen enthalten.
 Dazu gehören zum Beispiel:
 
 - Computername
+- Windows-Version
 - offene Ports
 - laufende Dienste
 - lokale Administratoren
-- Windows-Version
+- BitLocker-Status
 
 Deshalb werden Berichte nicht ins Git-Repository aufgenommen.
 
@@ -238,7 +265,7 @@ windows-security-checker/
 │   └── erzeugte Berichte
 │
 ├── README.md
-├── .gitignore
+└── .gitignore
 ```
 
 ---
@@ -264,6 +291,12 @@ Erweiterte Portbewertung mit:
 - INFO
 - WARNUNG
 - KRITISCH
+
+### Version 0.4.0
+
+BitLocker-Prüfung ergänzt.
+
+Das Tool prüft jetzt zusätzlich, ob BitLocker-Volumes vorhanden sind und ob Laufwerke verschlüsselt und geschützt sind.
 
 ---
 

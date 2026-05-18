@@ -18,7 +18,7 @@ from report.console import zusammenfassung_ausgeben
 from report.writer import json_bericht_speichern, text_bericht_speichern
 
 
-VERSION = "0.6.0"
+VERSION = "1.0.0"
 
 
 def sicherheitsbericht_erstellen() -> dict:

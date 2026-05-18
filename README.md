@@ -25,6 +25,8 @@ Die Ergebnisse werden in der Konsole angezeigt und zusätzlich als Bericht gespe
 
 Seit Version **0.6.0** ist der Code modular aufgebaut. Die einzelnen Prüfungen, Hilfsfunktionen und Berichtsfunktionen sind in getrennte Module ausgelagert.
 
+Version **1.0.0** ist die erste stabile Version des Projekts.
+
 ---
 
 ## Ziel des Projekts
@@ -77,7 +79,7 @@ python src/main.py
 ```text
 Windows Security Checker
 ==============================
-Version: 0.6.0
+Version: 1.0.0
 
 OK - Systeminformationen
      Die Systeminformationen wurden erfolgreich ausgelesen.
@@ -415,6 +417,12 @@ Das Tool prüft zusätzlich, ob ausstehende Windows-Softwareupdates vorhanden si
 Code modularisiert.
 
 Die Prüfungen, Hilfsfunktionen und Berichtsfunktionen wurden in getrennte Module aufgeteilt. Dadurch ist das Projekt übersichtlicher, wartbarer und besser erweiterbar.
+
+### Version 1.0.0
+
+Erste stabile Version des Windows Security Checkers.
+
+Das Tool enthält alle bisherigen Kernprüfungen, eine modulare Code-Struktur sowie eine vollständige deutsche Projektdokumentation.
 
 ---
 

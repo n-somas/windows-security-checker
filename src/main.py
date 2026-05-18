@@ -7,7 +7,9 @@ from pathlib import Path
 
 # Statuswerte für die Bewertung der Prüfungen
 STATUS_OK = "OK"
+STATUS_INFO = "INFO"
 STATUS_WARNUNG = "WARNUNG"
+STATUS_KRITISCH = "KRITISCH"
 STATUS_FEHLER = "FEHLER"
 
 
@@ -100,6 +102,38 @@ def liste_erzwingen(daten) -> list:
         return daten
 
     return [daten]
+
+
+def ist_lokale_adresse(adresse: str) -> bool:
+    """
+    Prüft, ob eine Adresse nur lokal auf dem Rechner erreichbar ist.
+
+    127.0.0.1 und ::1 sind Loopback-Adressen.
+    Dienste auf diesen Adressen sind nicht direkt im Netzwerk erreichbar.
+    """
+    lokale_adressen = {"127.0.0.1", "::1", "localhost"}
+    return adresse in lokale_adressen
+
+
+def hoechsten_status_ermitteln(status_liste: list) -> str:
+    """
+    Ermittelt den höchsten Status aus einer Liste von Statuswerten.
+
+    Reihenfolge:
+    FEHLER > KRITISCH > WARNUNG > INFO > OK
+    """
+    prioritaet = {
+        STATUS_OK: 1,
+        STATUS_INFO: 2,
+        STATUS_WARNUNG: 3,
+        STATUS_KRITISCH: 4,
+        STATUS_FEHLER: 5
+    }
+
+    if not status_liste:
+        return STATUS_OK
+
+    return max(status_liste, key=lambda status: prioritaet.get(status, 0))
 
 
 def systeminformationen_pruefen() -> dict:
@@ -333,6 +367,123 @@ def lokale_administratoren_pruefen() -> dict:
     }
 
 
+def port_risiko_bewerten(portnummer: int, adresse: str, prozess: str) -> dict:
+    """
+    Bewertet einen offenen TCP-Port nach Risiko.
+
+    Die Bewertung ist bewusst konservativ:
+    - Windows-Standarddienste wie RPC, NetBIOS und SMB werden als INFO markiert.
+    - Remote-Admin-Dienste wie RDP, WinRM, VNC und Telnet werden als KRITISCH markiert.
+    - Dienste wie FTP, SSH, SMTP oder Datenbankports werden als WARNUNG markiert.
+    """
+    port_katalog = {
+        21: {
+            "dienst": "FTP",
+            "status": STATUS_WARNUNG,
+            "hinweis": "FTP überträgt Daten häufig unverschlüsselt. Prüfen, ob der Dienst benötigt wird."
+        },
+        22: {
+            "dienst": "SSH",
+            "status": STATUS_WARNUNG,
+            "hinweis": "SSH ist ein Fernzugriffsdienst. Prüfen, ob der Zugriff bewusst aktiviert wurde."
+        },
+        23: {
+            "dienst": "Telnet",
+            "status": STATUS_KRITISCH,
+            "hinweis": "Telnet ist unsicher und sollte auf modernen Systemen nicht offen sein."
+        },
+        25: {
+            "dienst": "SMTP",
+            "status": STATUS_WARNUNG,
+            "hinweis": "SMTP sollte auf einem normalen Arbeitsplatzrechner in der Regel nicht offen sein."
+        },
+        80: {
+            "dienst": "HTTP",
+            "status": STATUS_WARNUNG,
+            "hinweis": "Ein Webserver auf Port 80 sollte nur offen sein, wenn er bewusst betrieben wird."
+        },
+        135: {
+            "dienst": "RPC",
+            "status": STATUS_INFO,
+            "hinweis": "RPC ist ein typischer Windows-Dienst. Im Heimnetz meistens normal, aber sicherheitsrelevant."
+        },
+        139: {
+            "dienst": "NetBIOS",
+            "status": STATUS_INFO,
+            "hinweis": "NetBIOS ist ein älterer Windows-Netzwerkdienst. Prüfen, ob Datei- und Druckerfreigaben benötigt werden."
+        },
+        443: {
+            "dienst": "HTTPS",
+            "status": STATUS_WARNUNG,
+            "hinweis": "Ein HTTPS-Dienst sollte nur offen sein, wenn er bewusst betrieben wird."
+        },
+        445: {
+            "dienst": "SMB",
+            "status": STATUS_INFO,
+            "hinweis": "SMB wird für Windows-Dateifreigaben genutzt. Im Heimnetz oft normal, aber sicherheitsrelevant."
+        },
+        1433: {
+            "dienst": "Microsoft SQL Server",
+            "status": STATUS_WARNUNG,
+            "hinweis": "Ein Datenbankdienst sollte auf einem Arbeitsplatzrechner nur bewusst offen sein."
+        },
+        3306: {
+            "dienst": "MySQL",
+            "status": STATUS_WARNUNG,
+            "hinweis": "Ein Datenbankdienst sollte nicht unnötig im Netzwerk lauschen."
+        },
+        3389: {
+            "dienst": "RDP",
+            "status": STATUS_KRITISCH,
+            "hinweis": "RDP erlaubt Fernzugriff. Wenn nicht benötigt, sollte der Dienst deaktiviert werden."
+        },
+        5432: {
+            "dienst": "PostgreSQL",
+            "status": STATUS_WARNUNG,
+            "hinweis": "Ein Datenbankdienst sollte nicht unnötig im Netzwerk lauschen."
+        },
+        5900: {
+            "dienst": "VNC",
+            "status": STATUS_KRITISCH,
+            "hinweis": "VNC erlaubt Fernzugriff und sollte nur bewusst aktiviert sein."
+        },
+        5985: {
+            "dienst": "WinRM HTTP",
+            "status": STATUS_KRITISCH,
+            "hinweis": "WinRM über HTTP erlaubt Remote-Verwaltung. Auf Einzelgeräten meist nicht nötig."
+        },
+        5986: {
+            "dienst": "WinRM HTTPS",
+            "status": STATUS_KRITISCH,
+            "hinweis": "WinRM erlaubt Remote-Verwaltung. Auf Einzelgeräten meist nicht nötig."
+        }
+    }
+
+    port_info = port_katalog.get(portnummer)
+
+    if not port_info:
+        return {}
+
+    if ist_lokale_adresse(adresse):
+        return {
+            "port": portnummer,
+            "dienst": port_info["dienst"],
+            "status": STATUS_INFO,
+            "adresse": adresse,
+            "prozess": prozess,
+            "hinweis": "Der Dienst lauscht nur lokal auf dem Rechner."
+        }
+
+    return {
+        "port": portnummer,
+        "dienst": port_info["dienst"],
+        "status": port_info["status"],
+        "adresse": adresse,
+        "prozess": prozess,
+        "hinweis": port_info["hinweis"]
+    }
+
+
 def offene_tcp_ports_pruefen() -> dict:
     """
     Listet offene TCP-Ports im LISTEN-Status auf.
@@ -341,8 +492,10 @@ def offene_tcp_ports_pruefen() -> dict:
     Ein offener Port ist nicht automatisch gefährlich.
     Er zeigt aber eine mögliche Angriffsfläche.
 
-    Diese Prüfung bewertet besonders sensible Ports,
-    wenn sie nicht nur lokal auf 127.0.0.1 oder ::1 lauschen.
+    Version 0.3.0 unterscheidet:
+    - INFO
+    - WARNUNG
+    - KRITISCH
     """
     powershell_befehl = """
     $verbindungen = Get-NetTCPConnection -State Listen | Sort-Object LocalPort
@@ -375,24 +528,7 @@ def offene_tcp_ports_pruefen() -> dict:
 
     ports = liste_erzwingen(daten)
     anzahl = len(ports)
-
-    sensible_ports = {
-        21: "FTP",
-        22: "SSH",
-        23: "Telnet",
-        25: "SMTP",
-        80: "HTTP",
-        135: "RPC",
-        139: "NetBIOS",
-        445: "SMB",
-        3389: "RDP",
-        5900: "VNC",
-        5985: "WinRM HTTP",
-        5986: "WinRM HTTPS"
-    }
-
-    lokale_adressen = {"127.0.0.1", "::1"}
-    auffaellige_ports = []
+    port_bewertungen = []
 
     for port_eintrag in ports:
         if not isinstance(port_eintrag, dict):
@@ -407,37 +543,42 @@ def offene_tcp_ports_pruefen() -> dict:
         except (TypeError, ValueError):
             continue
 
-        if local_port in sensible_ports and local_address not in lokale_adressen:
-            auffaellige_ports.append(
-                {
-                    "port": local_port,
-                    "dienst": sensible_ports[local_port],
-                    "adresse": local_address,
-                    "prozess": process_name
-                }
-            )
+        bewertung = port_risiko_bewerten(
+            portnummer=local_port,
+            adresse=local_address,
+            prozess=process_name
+        )
 
-    if auffaellige_ports:
-        status = STATUS_WARNUNG
-        bewertung = (
+        if bewertung:
+            port_bewertungen.append(bewertung)
+
+    status_liste = [eintrag["status"] for eintrag in port_bewertungen]
+    status = hoechsten_status_ermitteln(status_liste)
+
+    anzahl_info = sum(1 for eintrag in port_bewertungen if eintrag["status"] == STATUS_INFO)
+    anzahl_warnung = sum(1 for eintrag in port_bewertungen if eintrag["status"] == STATUS_WARNUNG)
+    anzahl_kritisch = sum(1 for eintrag in port_bewertungen if eintrag["status"] == STATUS_KRITISCH)
+
+    if not port_bewertungen:
+        status = STATUS_OK
+        bewertung_text = (
             f"Es wurden {anzahl} offene TCP-Ports gefunden. "
-            f"Davon sind {len(auffaellige_ports)} sensible Ports nicht nur lokal gebunden. "
-            "Diese Ports sollten geprüft werden."
+            "Es wurden keine bekannten prüfbedürftigen Standardports erkannt."
         )
     else:
-        status = STATUS_OK
-        bewertung = (
-            f"Es wurden {anzahl} offene TCP-Ports im LISTEN-Status gefunden. "
-            "Es wurden keine besonders sensiblen Ports außerhalb lokaler Adressen erkannt."
+        bewertung_text = (
+            f"Es wurden {anzahl} offene TCP-Ports gefunden. "
+            f"Davon wurden {len(port_bewertungen)} bekannte Ports bewertet: "
+            f"{anzahl_info} Info, {anzahl_warnung} Warnung, {anzahl_kritisch} Kritisch."
         )
 
     return {
         "pruefung": "Offene TCP-Ports",
         "status": status,
         "anzahl": anzahl,
-        "auffaellige_ports": auffaellige_ports,
+        "port_bewertungen": port_bewertungen,
         "ergebnis": daten,
-        "bewertung": bewertung,
+        "bewertung": bewertung_text,
         "fehler": None
     }
 
@@ -455,17 +596,21 @@ def sicherheitsbericht_erstellen() -> dict:
     ]
 
     anzahl_ok = sum(1 for pruefung in pruefungen if pruefung.get("status") == STATUS_OK)
+    anzahl_info = sum(1 for pruefung in pruefungen if pruefung.get("status") == STATUS_INFO)
     anzahl_warnungen = sum(1 for pruefung in pruefungen if pruefung.get("status") == STATUS_WARNUNG)
+    anzahl_kritisch = sum(1 for pruefung in pruefungen if pruefung.get("status") == STATUS_KRITISCH)
     anzahl_fehler = sum(1 for pruefung in pruefungen if pruefung.get("status") == STATUS_FEHLER)
 
     bericht = {
         "tool": "windows-security-checker",
-        "version": "0.2.1",
+        "version": "0.3.0",
         "erstellt_am": datetime.now().isoformat(timespec="seconds"),
         "hinweis": "Dieses Tool dient zu Lernzwecken und ersetzt kein professionelles Sicherheitsaudit.",
         "zusammenfassung": {
             "ok": anzahl_ok,
+            "info": anzahl_info,
             "warnungen": anzahl_warnungen,
+            "kritisch": anzahl_kritisch,
             "fehler": anzahl_fehler
         },
         "pruefungen": pruefungen
@@ -520,7 +665,9 @@ def text_bericht_speichern(bericht: dict) -> Path:
         datei.write("Zusammenfassung\n")
         datei.write("-" * 50 + "\n")
         datei.write(f"OK: {bericht['zusammenfassung']['ok']}\n")
+        datei.write(f"Info: {bericht['zusammenfassung']['info']}\n")
         datei.write(f"Warnungen: {bericht['zusammenfassung']['warnungen']}\n")
+        datei.write(f"Kritisch: {bericht['zusammenfassung']['kritisch']}\n")
         datei.write(f"Fehler: {bericht['zusammenfassung']['fehler']}\n\n")
 
         for pruefung in bericht["pruefungen"]:
@@ -536,19 +683,22 @@ def text_bericht_speichern(bericht: dict) -> Path:
                 datei.write(f"Fehler: {pruefung['fehler']}\n\n")
 
             if pruefung.get("pruefung") == "Offene TCP-Ports":
-                auffaellige_ports = pruefung.get("auffaellige_ports", [])
+                port_bewertungen = pruefung.get("port_bewertungen", [])
 
-                if auffaellige_ports:
-                    datei.write("Auffällige Ports:\n")
+                if port_bewertungen:
+                    datei.write("Bewertete Ports:\n")
 
-                    for port in auffaellige_ports:
+                    for port in port_bewertungen:
                         portnummer = port.get("port")
                         dienst = port.get("dienst")
+                        status = port.get("status")
                         adresse = port.get("adresse")
                         prozess = port.get("prozess")
+                        hinweis = port.get("hinweis")
 
                         datei.write(
-                            f"- Port {portnummer} ({dienst}) auf {adresse}, Prozess: {prozess}\n"
+                            f"- {status}: Port {portnummer} ({dienst}) auf {adresse}, "
+                            f"Prozess: {prozess}. {hinweis}\n"
                         )
 
                     datei.write("\n")
@@ -578,28 +728,33 @@ def zusammenfassung_ausgeben(bericht: dict) -> None:
         if pruefung.get("bewertung"):
             print(f"     {pruefung['bewertung']}")
 
-        # Auffällige Ports direkt in der Konsole anzeigen
         if pruefung.get("pruefung") == "Offene TCP-Ports":
-            auffaellige_ports = pruefung.get("auffaellige_ports", [])
+            port_bewertungen = pruefung.get("port_bewertungen", [])
 
-            if auffaellige_ports:
-                print("     Auffällige Ports:")
+            if port_bewertungen:
+                print("     Bewertete Ports:")
 
-                for port in auffaellige_ports:
+                for port in port_bewertungen:
                     portnummer = port.get("port")
                     dienst = port.get("dienst")
+                    port_status = port.get("status")
                     adresse = port.get("adresse")
                     prozess = port.get("prozess")
+                    hinweis = port.get("hinweis")
 
                     print(
-                        f"     - Port {portnummer} ({dienst}) auf {adresse}, Prozess: {prozess}"
+                        f"     - {port_status}: Port {portnummer} ({dienst}) "
+                        f"auf {adresse}, Prozess: {prozess}"
                     )
+                    print(f"       {hinweis}")
 
     print()
     print("Zusammenfassung")
     print("-" * 30)
     print(f"OK: {bericht['zusammenfassung']['ok']}")
+    print(f"Info: {bericht['zusammenfassung']['info']}")
     print(f"Warnungen: {bericht['zusammenfassung']['warnungen']}")
+    print(f"Kritisch: {bericht['zusammenfassung']['kritisch']}")
     print(f"Fehler: {bericht['zusammenfassung']['fehler']}")
 
     print()

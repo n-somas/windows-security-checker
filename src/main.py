@@ -367,6 +367,128 @@ def lokale_administratoren_pruefen() -> dict:
     }
 
 
+def bitlocker_pruefen() -> dict:
+    """
+    Prüft den BitLocker-Status der vorhandenen Laufwerke.
+
+    BitLocker schützt Daten bei Verlust oder Diebstahl des Geräts.
+    Besonders wichtig ist die Verschlüsselung des Systemlaufwerks.
+    """
+    powershell_befehl = """
+    $volumes = Get-BitLockerVolume |
+    Select-Object `
+        MountPoint, `
+        VolumeStatus, `
+        ProtectionStatus, `
+        EncryptionPercentage, `
+        LockStatus
+
+    @($volumes) | ConvertTo-Json -Depth 4
+    """
+
+    ergebnis = powershell_ausfuehren(powershell_befehl)
+    daten = json_ausgabe_umwandeln(ergebnis["ausgabe"])
+
+    if not ergebnis["erfolgreich"]:
+        return {
+            "pruefung": "BitLocker",
+            "status": STATUS_FEHLER,
+            "ergebnis": daten,
+            "bewertung": (
+                "Der BitLocker-Status konnte nicht geprüft werden. "
+                "Möglicherweise ist BitLocker auf dieser Windows-Edition nicht verfügbar "
+                "oder der Befehl benötigt erhöhte Rechte."
+            ),
+            "fehler": ergebnis["fehler"]
+        }
+
+    volumes = liste_erzwingen(daten)
+
+    if not volumes:
+        return {
+            "pruefung": "BitLocker",
+            "status": STATUS_WARNUNG,
+            "anzahl_volumes": 0,
+            "ergebnis": daten,
+            "bewertung": "Es wurden keine BitLocker-Volumes gefunden.",
+            "fehler": None
+        }
+
+    volume_bewertungen = []
+
+    for volume in volumes:
+        if not isinstance(volume, dict):
+            continue
+
+        mountpoint = volume.get("MountPoint")
+        volume_status = volume.get("VolumeStatus")
+        protection_status = volume.get("ProtectionStatus")
+        lock_status = volume.get("LockStatus")
+        encryption_percentage = volume.get("EncryptionPercentage")
+
+        try:
+            encryption_percentage = int(encryption_percentage)
+        except (TypeError, ValueError):
+            encryption_percentage = 0
+
+        if (
+            volume_status == "FullyEncrypted"
+            and protection_status == "On"
+            and encryption_percentage == 100
+        ):
+            status = STATUS_OK
+            hinweis = "Das Laufwerk ist vollständig verschlüsselt und der Schutz ist aktiv."
+        elif volume_status in {"EncryptionInProgress", "EncryptionPaused"}:
+            status = STATUS_INFO
+            hinweis = "Die Verschlüsselung ist gestartet, aber noch nicht vollständig abgeschlossen."
+        elif protection_status == "Off":
+            status = STATUS_WARNUNG
+            hinweis = "Der BitLocker-Schutz ist deaktiviert oder das Laufwerk ist nicht geschützt."
+        elif volume_status == "FullyDecrypted":
+            status = STATUS_WARNUNG
+            hinweis = "Das Laufwerk ist nicht verschlüsselt."
+        else:
+            status = STATUS_WARNUNG
+            hinweis = "Der BitLocker-Status ist nicht eindeutig und sollte manuell geprüft werden."
+
+        volume_bewertungen.append(
+            {
+                "laufwerk": mountpoint,
+                "status": status,
+                "volume_status": volume_status,
+                "protection_status": protection_status,
+                "encryption_percentage": encryption_percentage,
+                "lock_status": lock_status,
+                "hinweis": hinweis
+            }
+        )
+
+    status_liste = [volume["status"] for volume in volume_bewertungen]
+    gesamtstatus = hoechsten_status_ermitteln(status_liste)
+
+    anzahl_ok = sum(1 for volume in volume_bewertungen if volume["status"] == STATUS_OK)
+    anzahl_info = sum(1 for volume in volume_bewertungen if volume["status"] == STATUS_INFO)
+    anzahl_warnung = sum(1 for volume in volume_bewertungen if volume["status"] == STATUS_WARNUNG)
+
+    if gesamtstatus == STATUS_OK:
+        bewertung = "Alle geprüften Laufwerke sind vollständig verschlüsselt und geschützt."
+    else:
+        bewertung = (
+            f"Es wurden {len(volume_bewertungen)} Laufwerke geprüft: "
+            f"{anzahl_ok} OK, {anzahl_info} Info, {anzahl_warnung} Warnung."
+        )
+
+    return {
+        "pruefung": "BitLocker",
+        "status": gesamtstatus,
+        "anzahl_volumes": len(volume_bewertungen),
+        "volume_bewertungen": volume_bewertungen,
+        "ergebnis": daten,
+        "bewertung": bewertung,
+        "fehler": None
+    }
+
+
 def port_risiko_bewerten(portnummer: int, adresse: str, prozess: str) -> dict:
     """
     Bewertet einen offenen TCP-Port nach Risiko.
@@ -491,11 +613,6 @@ def offene_tcp_ports_pruefen() -> dict:
     Wichtig:
     Ein offener Port ist nicht automatisch gefährlich.
     Er zeigt aber eine mögliche Angriffsfläche.
-
-    Version 0.3.0 unterscheidet:
-    - INFO
-    - WARNUNG
-    - KRITISCH
     """
     powershell_befehl = """
     $verbindungen = Get-NetTCPConnection -State Listen | Sort-Object LocalPort
@@ -592,6 +709,7 @@ def sicherheitsbericht_erstellen() -> dict:
         windows_defender_pruefen(),
         firewall_pruefen(),
         lokale_administratoren_pruefen(),
+        bitlocker_pruefen(),
         offene_tcp_ports_pruefen()
     ]
 
@@ -603,7 +721,7 @@ def sicherheitsbericht_erstellen() -> dict:
 
     bericht = {
         "tool": "windows-security-checker",
-        "version": "0.3.0",
+        "version": "0.4.0",
         "erstellt_am": datetime.now().isoformat(timespec="seconds"),
         "hinweis": "Dieses Tool dient zu Lernzwecken und ersetzt kein professionelles Sicherheitsaudit.",
         "zusammenfassung": {
@@ -642,11 +760,6 @@ def json_bericht_speichern(bericht: dict) -> Path:
 def text_bericht_speichern(bericht: dict) -> Path:
     """
     Speichert den Sicherheitsbericht als lesbare Textdatei.
-
-    Die Textdatei eignet sich gut für:
-    - schnelle Kontrolle
-    - einfache Dokumentation
-    - Portfolio-Demo
     """
     BERICHTE_ORDNER.mkdir(exist_ok=True)
 
@@ -689,16 +802,27 @@ def text_bericht_speichern(bericht: dict) -> Path:
                     datei.write("Bewertete Ports:\n")
 
                     for port in port_bewertungen:
-                        portnummer = port.get("port")
-                        dienst = port.get("dienst")
-                        status = port.get("status")
-                        adresse = port.get("adresse")
-                        prozess = port.get("prozess")
-                        hinweis = port.get("hinweis")
-
                         datei.write(
-                            f"- {status}: Port {portnummer} ({dienst}) auf {adresse}, "
-                            f"Prozess: {prozess}. {hinweis}\n"
+                            f"- {port.get('status')}: Port {port.get('port')} "
+                            f"({port.get('dienst')}) auf {port.get('adresse')}, "
+                            f"Prozess: {port.get('prozess')}. {port.get('hinweis')}\n"
+                        )
+
+                    datei.write("\n")
+
+            if pruefung.get("pruefung") == "BitLocker":
+                volume_bewertungen = pruefung.get("volume_bewertungen", [])
+
+                if volume_bewertungen:
+                    datei.write("BitLocker-Laufwerke:\n")
+
+                    for volume in volume_bewertungen:
+                        datei.write(
+                            f"- {volume.get('status')}: Laufwerk {volume.get('laufwerk')}, "
+                            f"VolumeStatus: {volume.get('volume_status')}, "
+                            f"ProtectionStatus: {volume.get('protection_status')}, "
+                            f"Verschlüsselung: {volume.get('encryption_percentage')} %. "
+                            f"{volume.get('hinweis')}\n"
                         )
 
                     datei.write("\n")
@@ -728,6 +852,20 @@ def zusammenfassung_ausgeben(bericht: dict) -> None:
         if pruefung.get("bewertung"):
             print(f"     {pruefung['bewertung']}")
 
+        if pruefung.get("pruefung") == "BitLocker":
+            volume_bewertungen = pruefung.get("volume_bewertungen", [])
+
+            if volume_bewertungen:
+                print("     BitLocker-Laufwerke:")
+
+                for volume in volume_bewertungen:
+                    print(
+                        f"     - {volume.get('status')}: Laufwerk {volume.get('laufwerk')}, "
+                        f"Schutz: {volume.get('protection_status')}, "
+                        f"Verschlüsselung: {volume.get('encryption_percentage')} %"
+                    )
+                    print(f"       {volume.get('hinweis')}")
+
         if pruefung.get("pruefung") == "Offene TCP-Ports":
             port_bewertungen = pruefung.get("port_bewertungen", [])
 
@@ -735,18 +873,12 @@ def zusammenfassung_ausgeben(bericht: dict) -> None:
                 print("     Bewertete Ports:")
 
                 for port in port_bewertungen:
-                    portnummer = port.get("port")
-                    dienst = port.get("dienst")
-                    port_status = port.get("status")
-                    adresse = port.get("adresse")
-                    prozess = port.get("prozess")
-                    hinweis = port.get("hinweis")
-
                     print(
-                        f"     - {port_status}: Port {portnummer} ({dienst}) "
-                        f"auf {adresse}, Prozess: {prozess}"
+                        f"     - {port.get('status')}: Port {port.get('port')} "
+                        f"({port.get('dienst')}) auf {port.get('adresse')}, "
+                        f"Prozess: {port.get('prozess')}"
                     )
-                    print(f"       {hinweis}")
+                    print(f"       {port.get('hinweis')}")
 
     print()
     print("Zusammenfassung")

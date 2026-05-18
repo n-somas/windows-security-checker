@@ -14,29 +14,26 @@ STATUS_FEHLER = "FEHLER"
 
 
 # Projekt-Hauptordner ermitteln
-# __file__ zeigt auf src/main.py
-# parent.parent geht zwei Ebenen nach oben zum Projektordner
 PROJEKT_ORDNER = Path(__file__).resolve().parent.parent
 
 # Ordner für die erzeugten Berichte
 BERICHTE_ORDNER = PROJEKT_ORDNER / "reports"
 
 
-def powershell_ausfuehren(befehl: str) -> dict:
+def powershell_ausfuehren(befehl: str, timeout: int = 30) -> dict:
     """
     Führt einen PowerShell-Befehl aus.
 
-    Parameter:
-    befehl:
-        Der PowerShell-Befehl, der ausgeführt werden soll.
-
-    Rückgabe:
-        Ein Dictionary mit:
-        - erfolgreich: True oder False
-        - ausgabe: Ausgabe des Befehls
-        - fehler: Fehlermeldung, falls vorhanden
+    Die PowerShell-Ausgabe wird bewusst als UTF-8 verarbeitet.
+    Dadurch werden Encoding-Probleme mit deutschen oder speziellen Zeichen vermieden.
     """
     try:
+        powershell_befehl = (
+            "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; "
+            "$OutputEncoding = [System.Text.Encoding]::UTF8; "
+            + befehl
+        )
+
         ergebnis = subprocess.run(
             [
                 "powershell",
@@ -44,11 +41,13 @@ def powershell_ausfuehren(befehl: str) -> dict:
                 "-ExecutionPolicy",
                 "Bypass",
                 "-Command",
-                befehl
+                powershell_befehl
             ],
             capture_output=True,
             text=True,
-            timeout=30
+            encoding="utf-8",
+            errors="replace",
+            timeout=timeout
         )
 
         return {
@@ -107,9 +106,6 @@ def liste_erzwingen(daten) -> list:
 def ist_lokale_adresse(adresse: str) -> bool:
     """
     Prüft, ob eine Adresse nur lokal auf dem Rechner erreichbar ist.
-
-    127.0.0.1 und ::1 sind Loopback-Adressen.
-    Dienste auf diesen Adressen sind nicht direkt im Netzwerk erreichbar.
     """
     lokale_adressen = {"127.0.0.1", "::1", "localhost"}
     return adresse in lokale_adressen
@@ -139,12 +135,6 @@ def hoechsten_status_ermitteln(status_liste: list) -> str:
 def systeminformationen_pruefen() -> dict:
     """
     Ermittelt grundlegende Informationen zum Windows-System.
-
-    Dazu gehören:
-    - Computername
-    - Windows-Version
-    - Betriebssystemname
-    - Systemarchitektur
     """
     powershell_befehl = """
     $betriebssystem = Get-CimInstance Win32_OperatingSystem
@@ -188,12 +178,6 @@ def systeminformationen_pruefen() -> dict:
 def windows_defender_pruefen() -> dict:
     """
     Prüft den Status von Microsoft Defender.
-
-    Wichtige Werte:
-    - AntivirusEnabled: Virenschutz aktiv
-    - RealTimeProtectionEnabled: Echtzeitschutz aktiv
-    - AMServiceEnabled: Defender-Dienst aktiv
-    - DefenderSignaturesOutOfDate: Signaturen veraltet
     """
     powershell_befehl = """
     Get-MpComputerStatus |
@@ -263,14 +247,6 @@ def windows_defender_pruefen() -> dict:
 def firewall_pruefen() -> dict:
     """
     Prüft die Windows-Firewall-Profile.
-
-    Windows unterscheidet drei Profile:
-    - Domain
-    - Private
-    - Public
-
-    Für ein normales System sollten alle Profile aktiv sein.
-    Besonders wichtig ist das öffentliche Profil.
     """
     powershell_befehl = """
     Get-NetFirewallProfile |
@@ -316,10 +292,6 @@ def firewall_pruefen() -> dict:
 def lokale_administratoren_pruefen() -> dict:
     """
     Listet Mitglieder der lokalen Administratorengruppe auf.
-
-    Wichtig:
-    Die SID S-1-5-32-544 steht für die lokale Administratorengruppe.
-    Dadurch funktioniert der Befehl auch auf deutschsprachigen Windows-Systemen.
     """
     powershell_befehl = """
     $mitglieder = Get-LocalGroupMember -SID 'S-1-5-32-544' |
@@ -370,9 +342,6 @@ def lokale_administratoren_pruefen() -> dict:
 def bitlocker_pruefen() -> dict:
     """
     Prüft den BitLocker-Status der vorhandenen Laufwerke.
-
-    BitLocker schützt Daten bei Verlust oder Diebstahl des Geräts.
-    Besonders wichtig ist die Verschlüsselung des Systemlaufwerks.
     """
     powershell_befehl = """
     $volumes = Get-BitLockerVolume |
@@ -489,14 +458,140 @@ def bitlocker_pruefen() -> dict:
     }
 
 
+def windows_updates_pruefen() -> dict:
+    """
+    Prüft den Windows-Update-Status.
+
+    Das Tool verwendet die Windows Update COM-Schnittstelle.
+    Es wird geprüft, ob ausstehende Softwareupdates vorhanden sind.
+    Zusätzlich wird das zuletzt installierte Hotfix-Update ausgelesen.
+    """
+    powershell_befehl = """
+    $updateSession = New-Object -ComObject Microsoft.Update.Session
+    $updateSearcher = $updateSession.CreateUpdateSearcher()
+    $searchResult = $updateSearcher.Search("IsInstalled=0 and Type='Software'")
+
+    $pendingUpdates = @()
+
+    foreach ($update in $searchResult.Updates) {
+        $categories = @()
+
+        foreach ($category in $update.Categories) {
+            $categories += $category.Name
+        }
+
+        $pendingUpdates += [PSCustomObject]@{
+            Title = $update.Title
+            IsDownloaded = $update.IsDownloaded
+            IsMandatory = $update.IsMandatory
+            MsrcSeverity = $update.MsrcSeverity
+            RebootRequired = $update.RebootRequired
+            Categories = $categories
+        }
+    }
+
+    $latestHotfix = Get-HotFix |
+        Sort-Object InstalledOn -Descending |
+        Select-Object -First 1 HotFixID, Description, InstalledOn
+
+    [PSCustomObject]@{
+        PendingUpdateCount = $searchResult.Updates.Count
+        PendingUpdates = $pendingUpdates
+        LastInstalledHotFix = $latestHotfix
+    } | ConvertTo-Json -Depth 6
+    """
+
+    # Windows Update kann länger dauern, deshalb höheres Timeout.
+    ergebnis = powershell_ausfuehren(powershell_befehl, timeout=90)
+    daten = json_ausgabe_umwandeln(ergebnis["ausgabe"])
+
+    if not ergebnis["erfolgreich"]:
+        return {
+            "pruefung": "Windows Update",
+            "status": STATUS_FEHLER,
+            "ergebnis": daten,
+            "bewertung": (
+                "Der Windows-Update-Status konnte nicht geprüft werden. "
+                "Möglicherweise ist der Windows-Update-Dienst nicht verfügbar "
+                "oder die Prüfung hat zu lange gedauert."
+            ),
+            "fehler": ergebnis["fehler"]
+        }
+
+    if not isinstance(daten, dict):
+        return {
+            "pruefung": "Windows Update",
+            "status": STATUS_FEHLER,
+            "ergebnis": daten,
+            "bewertung": "Die Windows-Update-Ausgabe konnte nicht korrekt ausgewertet werden.",
+            "fehler": "Unerwartetes Ausgabeformat."
+        }
+
+    pending_count = daten.get("PendingUpdateCount", 0)
+    pending_updates = liste_erzwingen(daten.get("PendingUpdates"))
+
+    try:
+        pending_count = int(pending_count)
+    except (TypeError, ValueError):
+        pending_count = len(pending_updates)
+
+    sicherheits_updates = []
+
+    for update in pending_updates:
+        if not isinstance(update, dict):
+            continue
+
+        titel = str(update.get("Title", ""))
+        schweregrad = str(update.get("MsrcSeverity", ""))
+        kategorien = update.get("Categories", [])
+
+        if isinstance(kategorien, list):
+            kategorien_text = " ".join(str(kategorie) for kategorie in kategorien)
+        else:
+            kategorien_text = str(kategorien)
+
+        suchtext = f"{titel} {schweregrad} {kategorien_text}".lower()
+
+        if (
+            "security" in suchtext
+            or "sicherheit" in suchtext
+            or "critical" in suchtext
+            or "kritisch" in suchtext
+        ):
+            sicherheits_updates.append(update)
+
+    if pending_count == 0:
+        status = STATUS_OK
+        bewertung = "Es wurden keine ausstehenden Windows-Softwareupdates gefunden."
+    elif sicherheits_updates:
+        status = STATUS_WARNUNG
+        bewertung = (
+            f"Es wurden {pending_count} ausstehende Windows-Updates gefunden. "
+            f"Davon wirken {len(sicherheits_updates)} sicherheitsrelevant."
+        )
+    else:
+        status = STATUS_INFO
+        bewertung = (
+            f"Es wurden {pending_count} ausstehende Windows-Updates gefunden. "
+            "Es wurde kein eindeutig sicherheitsrelevantes Update erkannt."
+        )
+
+    return {
+        "pruefung": "Windows Update",
+        "status": status,
+        "anzahl_ausstehende_updates": pending_count,
+        "anzahl_sicherheits_updates": len(sicherheits_updates),
+        "ausstehende_updates": pending_updates,
+        "letztes_installiertes_update": daten.get("LastInstalledHotFix"),
+        "ergebnis": daten,
+        "bewertung": bewertung,
+        "fehler": None
+    }
+
+
 def port_risiko_bewerten(portnummer: int, adresse: str, prozess: str) -> dict:
     """
     Bewertet einen offenen TCP-Port nach Risiko.
-
-    Die Bewertung ist bewusst konservativ:
-    - Windows-Standarddienste wie RPC, NetBIOS und SMB werden als INFO markiert.
-    - Remote-Admin-Dienste wie RDP, WinRM, VNC und Telnet werden als KRITISCH markiert.
-    - Dienste wie FTP, SSH, SMTP oder Datenbankports werden als WARNUNG markiert.
     """
     port_katalog = {
         21: {
@@ -609,10 +704,6 @@ def port_risiko_bewerten(portnummer: int, adresse: str, prozess: str) -> dict:
 def offene_tcp_ports_pruefen() -> dict:
     """
     Listet offene TCP-Ports im LISTEN-Status auf.
-
-    Wichtig:
-    Ein offener Port ist nicht automatisch gefährlich.
-    Er zeigt aber eine mögliche Angriffsfläche.
     """
     powershell_befehl = """
     $verbindungen = Get-NetTCPConnection -State Listen | Sort-Object LocalPort
@@ -710,6 +801,7 @@ def sicherheitsbericht_erstellen() -> dict:
         firewall_pruefen(),
         lokale_administratoren_pruefen(),
         bitlocker_pruefen(),
+        windows_updates_pruefen(),
         offene_tcp_ports_pruefen()
     ]
 
@@ -721,7 +813,7 @@ def sicherheitsbericht_erstellen() -> dict:
 
     bericht = {
         "tool": "windows-security-checker",
-        "version": "0.4.0",
+        "version": "0.5.0",
         "erstellt_am": datetime.now().isoformat(timespec="seconds"),
         "hinweis": "Dieses Tool dient zu Lernzwecken und ersetzt kein professionelles Sicherheitsaudit.",
         "zusammenfassung": {
@@ -740,11 +832,6 @@ def sicherheitsbericht_erstellen() -> dict:
 def json_bericht_speichern(bericht: dict) -> Path:
     """
     Speichert den Sicherheitsbericht als JSON-Datei.
-
-    JSON eignet sich gut für:
-    - spätere Weiterverarbeitung
-    - Automatisierung
-    - maschinenlesbare Auswertung
     """
     BERICHTE_ORDNER.mkdir(exist_ok=True)
 
@@ -795,21 +882,6 @@ def text_bericht_speichern(bericht: dict) -> Path:
             if pruefung.get("fehler"):
                 datei.write(f"Fehler: {pruefung['fehler']}\n\n")
 
-            if pruefung.get("pruefung") == "Offene TCP-Ports":
-                port_bewertungen = pruefung.get("port_bewertungen", [])
-
-                if port_bewertungen:
-                    datei.write("Bewertete Ports:\n")
-
-                    for port in port_bewertungen:
-                        datei.write(
-                            f"- {port.get('status')}: Port {port.get('port')} "
-                            f"({port.get('dienst')}) auf {port.get('adresse')}, "
-                            f"Prozess: {port.get('prozess')}. {port.get('hinweis')}\n"
-                        )
-
-                    datei.write("\n")
-
             if pruefung.get("pruefung") == "BitLocker":
                 volume_bewertungen = pruefung.get("volume_bewertungen", [])
 
@@ -823,6 +895,37 @@ def text_bericht_speichern(bericht: dict) -> Path:
                             f"ProtectionStatus: {volume.get('protection_status')}, "
                             f"Verschlüsselung: {volume.get('encryption_percentage')} %. "
                             f"{volume.get('hinweis')}\n"
+                        )
+
+                    datei.write("\n")
+
+            if pruefung.get("pruefung") == "Windows Update":
+                updates = pruefung.get("ausstehende_updates", [])
+
+                if updates:
+                    datei.write("Ausstehende Windows-Updates:\n")
+
+                    for update in updates:
+                        if isinstance(update, dict):
+                            datei.write(
+                                f"- {update.get('Title')} | "
+                                f"Schweregrad: {update.get('MsrcSeverity')} | "
+                                f"Pflichtupdate: {update.get('IsMandatory')}\n"
+                            )
+
+                    datei.write("\n")
+
+            if pruefung.get("pruefung") == "Offene TCP-Ports":
+                port_bewertungen = pruefung.get("port_bewertungen", [])
+
+                if port_bewertungen:
+                    datei.write("Bewertete Ports:\n")
+
+                    for port in port_bewertungen:
+                        datei.write(
+                            f"- {port.get('status')}: Port {port.get('port')} "
+                            f"({port.get('dienst')}) auf {port.get('adresse')}, "
+                            f"Prozess: {port.get('prozess')}. {port.get('hinweis')}\n"
                         )
 
                     datei.write("\n")
@@ -866,6 +969,19 @@ def zusammenfassung_ausgeben(bericht: dict) -> None:
                     )
                     print(f"       {volume.get('hinweis')}")
 
+        if pruefung.get("pruefung") == "Windows Update":
+            updates = pruefung.get("ausstehende_updates", [])
+
+            if updates:
+                print("     Ausstehende Updates:")
+
+                for update in updates[:5]:
+                    if isinstance(update, dict):
+                        print(f"     - {update.get('Title')}")
+
+                if len(updates) > 5:
+                    print(f"     ... weitere {len(updates) - 5} Updates im Bericht.")
+
         if pruefung.get("pruefung") == "Offene TCP-Ports":
             port_bewertungen = pruefung.get("port_bewertungen", [])
 
@@ -896,12 +1012,6 @@ def zusammenfassung_ausgeben(bericht: dict) -> None:
 def main() -> None:
     """
     Einstiegspunkt des Programms.
-
-    Ablauf:
-    1. Sicherheitsprüfungen ausführen
-    2. JSON-Bericht speichern
-    3. Text-Bericht speichern
-    4. Zusammenfassung in der Konsole anzeigen
     """
     bericht = sicherheitsbericht_erstellen()
 
@@ -917,3 +1027,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+       

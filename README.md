@@ -17,6 +17,7 @@ Das Tool prüft aktuell:
 - Windows-Firewall
 - lokale Administratoren
 - BitLocker-Status
+- Windows-Update-Status
 - offene TCP-Ports
 - Risikobewertung bekannter Ports
 
@@ -35,6 +36,7 @@ Es zeigt Kenntnisse in:
 - Windows-Sicherheitsprüfung
 - Auswertung von Systeminformationen
 - Prüfung von Windows-Sicherheitsfunktionen
+- Windows-Update-Auswertung
 - Port-Analyse
 - Berichtserstellung
 - Git- und GitHub-Projektstruktur
@@ -72,7 +74,7 @@ python src/main.py
 ```text
 Windows Security Checker
 ==============================
-Version: 0.4.0
+Version: 0.5.0
 
 OK - Systeminformationen
      Die Systeminformationen wurden erfolgreich ausgelesen.
@@ -89,6 +91,9 @@ OK - Lokale Administratoren
 WARNUNG - BitLocker
      Es wurden keine BitLocker-Volumes gefunden.
 
+WARNUNG - Windows Update
+     Es wurden 1 ausstehende Windows-Updates gefunden. Davon wirken 1 sicherheitsrelevant.
+
 INFO - Offene TCP-Ports
      Es wurden offene TCP-Ports gefunden. Bekannte Ports wurden bewertet.
 
@@ -96,7 +101,7 @@ Zusammenfassung
 ------------------------------
 OK: 3
 Info: 1
-Warnungen: 2
+Warnungen: 3
 Kritisch: 0
 Fehler: 0
 ```
@@ -191,6 +196,27 @@ Es wurden keine BitLocker-Volumes gefunden.
 
 ---
 
+### Windows Update
+
+Prüft, ob ausstehende Windows-Softwareupdates vorhanden sind.
+
+Die Prüfung nutzt die Windows-Update-Schnittstelle und erkennt unter anderem:
+
+- Anzahl ausstehender Updates
+- potenziell sicherheitsrelevante Updates
+- zuletzt installiertes Hotfix-Update
+- Update-Titel und Kategorien
+
+Beispiel für eine Warnung:
+
+```text
+Es wurden 1 ausstehende Windows-Updates gefunden. Davon wirken 1 sicherheitsrelevant.
+```
+
+Hinweis: Die Windows-Update-Prüfung kann etwas länger dauern, weil Windows aktiv nach Updates sucht.
+
+---
+
 ### Offene TCP-Ports
 
 Listet offene TCP-Ports im Status `LISTEN` auf.
@@ -228,8 +254,8 @@ Es werden zwei Formate erzeugt:
 Beispiel:
 
 ```text
-reports/sicherheitsbericht_2026-05-18_06-25-52.json
-reports/sicherheitsbericht_2026-05-18_06-25-52.txt
+reports/sicherheitsbericht_2026-05-18_09-48-07.json
+reports/sicherheitsbericht_2026-05-18_09-48-07.txt
 ```
 
 ---
@@ -246,6 +272,8 @@ Dazu gehören zum Beispiel:
 - laufende Dienste
 - lokale Administratoren
 - BitLocker-Status
+- ausstehende Windows-Updates
+- zuletzt installierte Hotfixes
 
 Deshalb werden Berichte nicht ins Git-Repository aufgenommen.
 
@@ -296,7 +324,13 @@ Erweiterte Portbewertung mit:
 
 BitLocker-Prüfung ergänzt.
 
-Das Tool prüft jetzt zusätzlich, ob BitLocker-Volumes vorhanden sind und ob Laufwerke verschlüsselt und geschützt sind.
+Das Tool prüft zusätzlich, ob BitLocker-Volumes vorhanden sind und ob Laufwerke verschlüsselt und geschützt sind.
+
+### Version 0.5.0
+
+Windows-Update-Prüfung ergänzt.
+
+Das Tool prüft zusätzlich, ob ausstehende Windows-Softwareupdates vorhanden sind und ob diese sicherheitsrelevant wirken.
 
 ---
 

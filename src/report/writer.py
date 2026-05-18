@@ -59,11 +59,11 @@ def zusammenfassung_schreiben(datei, bericht: dict) -> None:
 
 def pruefungen_schreiben(datei, bericht: dict) -> None:
     """
-    Schreibt alle PrÃ¼fungen in den Textbericht.
+    Schreibt alle Prüfungen in den Textbericht.
     """
     for pruefung in bericht["pruefungen"]:
         datei.write("-" * 50 + "\n")
-        datei.write(f"PrÃ¼fung: {pruefung['pruefung']}\n")
+        datei.write(f"Prüfung: {pruefung['pruefung']}\n")
         datei.write(f"Status: {pruefung['status']}\n")
         datei.write("-" * 50 + "\n")
 
@@ -103,7 +103,7 @@ def bitlocker_laufwerke_schreiben(datei, pruefung: dict) -> None:
             f"- {volume.get('status')}: Laufwerk {volume.get('laufwerk')}, "
             f"VolumeStatus: {volume.get('volume_status')}, "
             f"ProtectionStatus: {volume.get('protection_status')}, "
-            f"VerschlÃ¼sselung: {volume.get('encryption_percentage')} %. "
+            f"Verschlüsselung: {volume.get('encryption_percentage')} %. "
             f"{volume.get('hinweis')}\n"
         )
 

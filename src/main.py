@@ -23,7 +23,7 @@ VERSION = "1.0.0"
 
 def sicherheitsbericht_erstellen() -> dict:
     """
-    FÃ¼hrt alle SicherheitsprÃ¼fungen aus und erstellt einen Gesamtbericht.
+    Führt alle Sicherheitsprüfungen aus und erstellt einen Gesamtbericht.
     """
     pruefungen = [
         systeminformationen_pruefen(),
@@ -49,7 +49,7 @@ def sicherheitsbericht_erstellen() -> dict:
 
 def zusammenfassung_erstellen(pruefungen: list) -> dict:
     """
-    Erstellt die Status-Zusammenfassung aller PrÃ¼fungen.
+    Erstellt die Status-Zusammenfassung aller Prüfungen.
     """
     return {
         "ok": sum(1 for pruefung in pruefungen if pruefung.get("status") == STATUS_OK),
@@ -65,7 +65,7 @@ def main() -> None:
     Einstiegspunkt des Programms.
 
     Ablauf:
-    1. SicherheitsprÃ¼fungen ausfÃ¼hren
+    1. Sicherheitsprüfungen ausführen
     2. JSON-Bericht speichern
     3. Text-Bericht speichern
     4. Zusammenfassung in der Konsole anzeigen

@@ -13,7 +13,7 @@ def json_ausgabe_umwandeln(rohausgabe: str):
     """
     Wandelt eine PowerShell-JSON-Ausgabe in Python-Daten um.
 
-    Falls die Ausgabe kein gÃ¼ltiges JSON ist, wird der ursprÃ¼ngliche Text zurÃ¼ckgegeben.
+    Falls die Ausgabe kein gültiges JSON ist, wird der ursprüngliche Text zurückgegeben.
     """
     if not rohausgabe:
         return None
@@ -26,10 +26,10 @@ def json_ausgabe_umwandeln(rohausgabe: str):
 
 def liste_erzwingen(daten) -> list:
     """
-    Sorgt dafÃ¼r, dass Daten immer als Liste verarbeitet werden kÃ¶nnen.
+    Sorgt dafür, dass Daten immer als Liste verarbeitet werden können.
 
     Hintergrund:
-    PowerShell gibt bei einem einzelnen Objekt manchmal ein Dictionary zurÃ¼ck,
+    PowerShell gibt bei einem einzelnen Objekt manchmal ein Dictionary zurück,
     bei mehreren Objekten aber eine Liste.
     """
     if daten is None:
@@ -43,7 +43,7 @@ def liste_erzwingen(daten) -> list:
 
 def ist_lokale_adresse(adresse: str) -> bool:
     """
-    PrÃ¼ft, ob eine Adresse nur lokal auf dem Rechner erreichbar ist.
+    Prüft, ob eine Adresse nur lokal auf dem Rechner erreichbar ist.
     """
     lokale_adressen = {"127.0.0.1", "::1", "localhost"}
     return adresse in lokale_adressen
@@ -51,7 +51,7 @@ def ist_lokale_adresse(adresse: str) -> bool:
 
 def hoechsten_status_ermitteln(status_liste: list) -> str:
     """
-    Ermittelt den hÃ¶chsten Status aus einer Liste von Statuswerten.
+    Ermittelt den höchsten Status aus einer Liste von Statuswerten.
 
     Reihenfolge:
     FEHLER > KRITISCH > WARNUNG > INFO > OK

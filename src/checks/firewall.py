@@ -5,7 +5,7 @@ from core.powershell import powershell_ausfuehren
 
 def firewall_pruefen() -> dict:
     """
-    PrÃ¼ft die Windows-Firewall-Profile.
+    Prüft die Windows-Firewall-Profile.
     """
     powershell_befehl = """
     Get-NetFirewallProfile |
@@ -21,7 +21,7 @@ def firewall_pruefen() -> dict:
             "pruefung": "Windows-Firewall",
             "status": STATUS_FEHLER,
             "ergebnis": daten,
-            "bewertung": "Die Windows-Firewall konnte nicht geprÃ¼ft werden.",
+            "bewertung": "Die Windows-Firewall konnte nicht geprüft werden.",
             "fehler": ergebnis["fehler"],
         }
 

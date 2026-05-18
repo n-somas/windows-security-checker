@@ -9,7 +9,7 @@ STATUS_FEHLER = "FEHLER"
 
 
 # constants.py liegt in src/core/
-# parent.parent.parent fÃ¼hrt zurÃ¼ck zum Projektordner.
+# parent.parent.parent führt zurück zum Projektordner.
 PROJEKT_ORDNER = Path(__file__).resolve().parent.parent.parent
 
 BERICHTE_ORDNER = PROJEKT_ORDNER / "reports"

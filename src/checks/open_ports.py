@@ -16,12 +16,12 @@ def port_risiko_bewerten(portnummer: int, adresse: str, prozess: str) -> dict:
         21: {
             "dienst": "FTP",
             "status": STATUS_WARNUNG,
-            "hinweis": "FTP Ã¼bertrÃ¤gt Daten hÃ¤ufig unverschlÃ¼sselt. PrÃ¼fen, ob der Dienst benÃ¶tigt wird.",
+            "hinweis": "FTP überträgt Daten häufig unverschlüsselt. Prüfen, ob der Dienst benötigt wird.",
         },
         22: {
             "dienst": "SSH",
             "status": STATUS_WARNUNG,
-            "hinweis": "SSH ist ein Fernzugriffsdienst. PrÃ¼fen, ob der Zugriff bewusst aktiviert wurde.",
+            "hinweis": "SSH ist ein Fernzugriffsdienst. Prüfen, ob der Zugriff bewusst aktiviert wurde.",
         },
         23: {
             "dienst": "Telnet",
@@ -46,7 +46,7 @@ def port_risiko_bewerten(portnummer: int, adresse: str, prozess: str) -> dict:
         139: {
             "dienst": "NetBIOS",
             "status": STATUS_INFO,
-            "hinweis": "NetBIOS ist ein Ã¤lterer Windows-Netzwerkdienst. PrÃ¼fen, ob Datei- und Druckerfreigaben benÃ¶tigt werden.",
+            "hinweis": "NetBIOS ist ein älterer Windows-Netzwerkdienst. Prüfen, ob Datei- und Druckerfreigaben benötigt werden.",
         },
         443: {
             "dienst": "HTTPS",
@@ -56,7 +56,7 @@ def port_risiko_bewerten(portnummer: int, adresse: str, prozess: str) -> dict:
         445: {
             "dienst": "SMB",
             "status": STATUS_INFO,
-            "hinweis": "SMB wird fÃ¼r Windows-Dateifreigaben genutzt. Im Heimnetz oft normal, aber sicherheitsrelevant.",
+            "hinweis": "SMB wird für Windows-Dateifreigaben genutzt. Im Heimnetz oft normal, aber sicherheitsrelevant.",
         },
         1433: {
             "dienst": "Microsoft SQL Server",
@@ -66,17 +66,17 @@ def port_risiko_bewerten(portnummer: int, adresse: str, prozess: str) -> dict:
         3306: {
             "dienst": "MySQL",
             "status": STATUS_WARNUNG,
-            "hinweis": "Ein Datenbankdienst sollte nicht unnÃ¶tig im Netzwerk lauschen.",
+            "hinweis": "Ein Datenbankdienst sollte nicht unnötig im Netzwerk lauschen.",
         },
         3389: {
             "dienst": "RDP",
             "status": STATUS_KRITISCH,
-            "hinweis": "RDP erlaubt Fernzugriff. Wenn nicht benÃ¶tigt, sollte der Dienst deaktiviert werden.",
+            "hinweis": "RDP erlaubt Fernzugriff. Wenn nicht benötigt, sollte der Dienst deaktiviert werden.",
         },
         5432: {
             "dienst": "PostgreSQL",
             "status": STATUS_WARNUNG,
-            "hinweis": "Ein Datenbankdienst sollte nicht unnÃ¶tig im Netzwerk lauschen.",
+            "hinweis": "Ein Datenbankdienst sollte nicht unnötig im Netzwerk lauschen.",
         },
         5900: {
             "dienst": "VNC",
@@ -86,12 +86,12 @@ def port_risiko_bewerten(portnummer: int, adresse: str, prozess: str) -> dict:
         5985: {
             "dienst": "WinRM HTTP",
             "status": STATUS_KRITISCH,
-            "hinweis": "WinRM Ã¼ber HTTP erlaubt Remote-Verwaltung. Auf EinzelgerÃ¤ten meist nicht nÃ¶tig.",
+            "hinweis": "WinRM über HTTP erlaubt Remote-Verwaltung. Auf Einzelgeräten meist nicht nötig.",
         },
         5986: {
             "dienst": "WinRM HTTPS",
             "status": STATUS_KRITISCH,
-            "hinweis": "WinRM erlaubt Remote-Verwaltung. Auf EinzelgerÃ¤ten meist nicht nÃ¶tig.",
+            "hinweis": "WinRM erlaubt Remote-Verwaltung. Auf Einzelgeräten meist nicht nötig.",
         },
     }
 
@@ -190,7 +190,7 @@ def offene_tcp_ports_pruefen() -> dict:
         status = STATUS_OK
         bewertung_text = (
             f"Es wurden {anzahl} offene TCP-Ports gefunden. "
-            "Es wurden keine bekannten prÃ¼fbedÃ¼rftigen Standardports erkannt."
+            "Es wurden keine bekannten prüfbedürftigen Standardports erkannt."
         )
     else:
         bewertung_text = (

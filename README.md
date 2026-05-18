@@ -239,7 +239,6 @@ windows-security-checker/
 │
 ├── README.md
 ├── .gitignore
-└── LICENSE
 ```
 
 ---

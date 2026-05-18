@@ -33,14 +33,14 @@ def lokale_administratoren_pruefen() -> dict:
         status = STATUS_OK
         bewertung = (
             f"Es wurden {anzahl} lokale Administratoren oder Administratorgruppen gefunden. "
-            "Das ist fÃ¼r ein EinzelgerÃ¤t nicht ungewÃ¶hnlich. "
-            "Die EintrÃ¤ge sollten trotzdem regelmÃ¤ÃŸig geprÃ¼ft werden."
+            "Das ist für ein Einzelgerät nicht ungewöhnlich. "
+            "Die Einträge sollten trotzdem regelmäßig geprüft werden."
         )
     else:
         status = STATUS_WARNUNG
         bewertung = (
             f"Es wurden {anzahl} lokale Administratoren oder Administratorgruppen gefunden. "
-            "Viele Administratoren erhÃ¶hen das Risiko bei kompromittierten Konten."
+            "Viele Administratoren erhöhen das Risiko bei kompromittierten Konten."
         )
 
     return {

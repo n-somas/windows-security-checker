@@ -1,4 +1,4 @@
-from core.constants import STATUS_OK, STATUS_WARNUNG, STATUS_FEHLER
+﻿from core.constants import STATUS_OK, STATUS_WARNUNG, STATUS_FEHLER
 from core.helpers import json_ausgabe_umwandeln, liste_erzwingen
 from core.powershell import powershell_ausfuehren
 
@@ -33,14 +33,14 @@ def lokale_administratoren_pruefen() -> dict:
         status = STATUS_OK
         bewertung = (
             f"Es wurden {anzahl} lokale Administratoren oder Administratorgruppen gefunden. "
-            "Das ist für ein Einzelgerät nicht ungewöhnlich. "
-            "Die Einträge sollten trotzdem regelmäßig geprüft werden."
+            "Das ist fÃ¼r ein EinzelgerÃ¤t nicht ungewÃ¶hnlich. "
+            "Die EintrÃ¤ge sollten trotzdem regelmÃ¤ÃŸig geprÃ¼ft werden."
         )
     else:
         status = STATUS_WARNUNG
         bewertung = (
             f"Es wurden {anzahl} lokale Administratoren oder Administratorgruppen gefunden. "
-            "Viele Administratoren erhöhen das Risiko bei kompromittierten Konten."
+            "Viele Administratoren erhÃ¶hen das Risiko bei kompromittierten Konten."
         )
 
     return {

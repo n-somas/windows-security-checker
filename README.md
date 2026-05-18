@@ -1,6 +1,6 @@
-# Windows Security Checker
+﻿# Windows Security Checker
 
-Ein kleines Python-Tool zur Prüfung grundlegender Windows-Sicherheitsparameter.
+Ein kleines Python-Tool zur PrÃ¼fung grundlegender Windows-Sicherheitsparameter.
 
 Das Projekt dient als Lern- und Portfolio-Projekt im Bereich **Cybersecurity**, **Windows-Sicherheit** und **IT-Support**.
 
@@ -10,7 +10,7 @@ Das Projekt dient als Lern- und Portfolio-Projekt im Bereich **Cybersecurity**, 
 
 Der **Windows Security Checker** sammelt grundlegende Sicherheitsinformationen eines Windows-Systems und erstellt daraus lokale Berichte.
 
-Das Tool prüft aktuell:
+Das Tool prÃ¼ft aktuell:
 
 - Systeminformationen
 - Microsoft Defender
@@ -21,9 +21,9 @@ Das Tool prüft aktuell:
 - offene TCP-Ports
 - Risikobewertung bekannter Ports
 
-Die Ergebnisse werden in der Konsole angezeigt und zusätzlich als Bericht gespeichert.
+Die Ergebnisse werden in der Konsole angezeigt und zusÃ¤tzlich als Bericht gespeichert.
 
-Seit Version **0.6.0** ist der Code modular aufgebaut. Die einzelnen Prüfungen, Hilfsfunktionen und Berichtsfunktionen sind in getrennte Module ausgelagert.
+Seit Version **0.6.0** ist der Code modular aufgebaut. Die einzelnen PrÃ¼fungen, Hilfsfunktionen und Berichtsfunktionen sind in getrennte Module ausgelagert.
 
 Version **1.0.0** ist die erste stabile Version des Projekts.
 
@@ -31,15 +31,15 @@ Version **1.0.0** ist die erste stabile Version des Projekts.
 
 ## Ziel des Projekts
 
-Dieses Projekt wurde erstellt, um praktische Grundlagen im Bereich Blue Team und Windows Security zu üben.
+Dieses Projekt wurde erstellt, um praktische Grundlagen im Bereich Blue Team und Windows Security zu Ã¼ben.
 
 Es zeigt Kenntnisse in:
 
 - Python-Scripting
 - PowerShell-Integration
-- Windows-Sicherheitsprüfung
+- Windows-SicherheitsprÃ¼fung
 - Auswertung von Systeminformationen
-- Prüfung von Windows-Sicherheitsfunktionen
+- PrÃ¼fung von Windows-Sicherheitsfunktionen
 - Windows-Update-Auswertung
 - Port-Analyse
 - Berichtserstellung
@@ -59,7 +59,7 @@ Es zeigt Kenntnisse in:
 
 ## Projekt starten
 
-Im Projektordner ausführen:
+Im Projektordner ausfÃ¼hren:
 
 ```powershell
 python src/main.py
@@ -119,15 +119,15 @@ Das Tool unterscheidet mehrere Statuswerte.
 
 | Status | Bedeutung |
 |---|---|
-| OK | Prüfung erfolgreich und unauffällig |
+| OK | PrÃ¼fung erfolgreich und unauffÃ¤llig |
 | INFO | sicherheitsrelevante Information, aber nicht direkt problematisch |
-| WARNUNG | prüfbedürftiger Zustand |
-| KRITISCH | potenziell gefährlicher Zustand |
-| FEHLER | Prüfung konnte nicht ausgeführt werden |
+| WARNUNG | prÃ¼fbedÃ¼rftiger Zustand |
+| KRITISCH | potenziell gefÃ¤hrlicher Zustand |
+| FEHLER | PrÃ¼fung konnte nicht ausgefÃ¼hrt werden |
 
 ---
 
-## Aktuelle Prüfungen
+## Aktuelle PrÃ¼fungen
 
 ### Systeminformationen
 
@@ -146,13 +146,13 @@ Ermittelt grundlegende Informationen zum System:
 
 ### Microsoft Defender
 
-Prüft unter anderem:
+PrÃ¼ft unter anderem:
 
 - ob Microsoft Defender aktiv ist
 - ob der Echtzeitschutz aktiv ist
 - ob Signaturen veraltet sind
 
-Beispiel für eine Warnung:
+Beispiel fÃ¼r eine Warnung:
 
 ```text
 Microsoft Defender ist aktiv, aber der Echtzeitschutz ist deaktiviert.
@@ -162,7 +162,7 @@ Microsoft Defender ist aktiv, aber der Echtzeitschutz ist deaktiviert.
 
 ### Windows-Firewall
 
-Prüft die drei Windows-Firewall-Profile:
+PrÃ¼ft die drei Windows-Firewall-Profile:
 
 - Domain
 - Private
@@ -176,24 +176,24 @@ Alle Profile sollten im Normalfall aktiv sein.
 
 Listet Mitglieder der lokalen Administratorengruppe auf.
 
-Das ist wichtig, weil zu viele lokale Administratoren das Risiko bei kompromittierten Konten erhöhen.
+Das ist wichtig, weil zu viele lokale Administratoren das Risiko bei kompromittierten Konten erhÃ¶hen.
 
 ---
 
 ### BitLocker
 
-Prüft den BitLocker-Status vorhandener Laufwerke.
+PrÃ¼ft den BitLocker-Status vorhandener Laufwerke.
 
-BitLocker schützt Daten bei Verlust oder Diebstahl des Geräts. Besonders wichtig ist die Verschlüsselung des Systemlaufwerks.
+BitLocker schÃ¼tzt Daten bei Verlust oder Diebstahl des GerÃ¤ts. Besonders wichtig ist die VerschlÃ¼sselung des Systemlaufwerks.
 
 Das Tool bewertet unter anderem:
 
 - ob BitLocker-Volumes vorhanden sind
-- ob Laufwerke vollständig verschlüsselt sind
+- ob Laufwerke vollstÃ¤ndig verschlÃ¼sselt sind
 - ob der BitLocker-Schutz aktiv ist
-- ob die Verschlüsselung noch läuft oder pausiert ist
+- ob die VerschlÃ¼sselung noch lÃ¤uft oder pausiert ist
 
-Beispiel für eine Warnung:
+Beispiel fÃ¼r eine Warnung:
 
 ```text
 Es wurden keine BitLocker-Volumes gefunden.
@@ -203,22 +203,22 @@ Es wurden keine BitLocker-Volumes gefunden.
 
 ### Windows Update
 
-Prüft, ob ausstehende Windows-Softwareupdates vorhanden sind.
+PrÃ¼ft, ob ausstehende Windows-Softwareupdates vorhanden sind.
 
-Die Prüfung nutzt die Windows-Update-Schnittstelle und erkennt unter anderem:
+Die PrÃ¼fung nutzt die Windows-Update-Schnittstelle und erkennt unter anderem:
 
 - Anzahl ausstehender Updates
 - potenziell sicherheitsrelevante Updates
 - zuletzt installiertes Hotfix-Update
 - Update-Titel und Kategorien
 
-Beispiel für eine Warnung:
+Beispiel fÃ¼r eine Warnung:
 
 ```text
 Es wurden 1 ausstehende Windows-Updates gefunden. Davon wirken 1 sicherheitsrelevant.
 ```
 
-Hinweis: Die Windows-Update-Prüfung kann etwas länger dauern, weil Windows aktiv nach Updates sucht.
+Hinweis: Die Windows-Update-PrÃ¼fung kann etwas lÃ¤nger dauern, weil Windows aktiv nach Updates sucht.
 
 ---
 
@@ -226,7 +226,7 @@ Hinweis: Die Windows-Update-Prüfung kann etwas länger dauern, weil Windows akt
 
 Listet offene TCP-Ports im Status `LISTEN` auf.
 
-Zusätzlich bewertet das Tool bekannte Ports nach Risiko.
+ZusÃ¤tzlich bewertet das Tool bekannte Ports nach Risiko.
 
 Beispiele:
 
@@ -267,9 +267,9 @@ reports/sicherheitsbericht_2026-05-18_10-14-42.txt
 
 ## Datenschutzhinweis
 
-Die erzeugten Berichte können Systeminformationen enthalten.
+Die erzeugten Berichte kÃ¶nnen Systeminformationen enthalten.
 
-Dazu gehören zum Beispiel:
+Dazu gehÃ¶ren zum Beispiel:
 
 - Computername
 - Windows-Version
@@ -282,7 +282,7 @@ Dazu gehören zum Beispiel:
 
 Deshalb werden Berichte nicht ins Git-Repository aufgenommen.
 
-Der Ordner `reports` ist über `.gitignore` ausgeschlossen.
+Der Ordner `reports` ist Ã¼ber `.gitignore` ausgeschlossen.
 
 ---
 
@@ -290,41 +290,41 @@ Der Ordner `reports` ist über `.gitignore` ausgeschlossen.
 
 ```text
 windows-security-checker/
-│
-├── src/
-│   ├── main.py
-│   │
-│   ├── core/
-│   │   ├── __init__.py
-│   │   ├── constants.py
-│   │   ├── helpers.py
-│   │   └── powershell.py
-│   │
-│   ├── checks/
-│   │   ├── __init__.py
-│   │   ├── system_info.py
-│   │   ├── defender.py
-│   │   ├── firewall.py
-│   │   ├── local_admins.py
-│   │   ├── bitlocker.py
-│   │   ├── windows_update.py
-│   │   └── open_ports.py
-│   │
-│   └── report/
-│       ├── __init__.py
-│       ├── console.py
-│       └── writer.py
-│
-├── reports/
-│   └── erzeugte Berichte
-│
-├── README.md
-└── .gitignore
+â”‚
+â”œâ”€â”€ src/
+â”‚   â”œâ”€â”€ main.py
+â”‚   â”‚
+â”‚   â”œâ”€â”€ core/
+â”‚   â”‚   â”œâ”€â”€ __init__.py
+â”‚   â”‚   â”œâ”€â”€ constants.py
+â”‚   â”‚   â”œâ”€â”€ helpers.py
+â”‚   â”‚   â””â”€â”€ powershell.py
+â”‚   â”‚
+â”‚   â”œâ”€â”€ checks/
+â”‚   â”‚   â”œâ”€â”€ __init__.py
+â”‚   â”‚   â”œâ”€â”€ system_info.py
+â”‚   â”‚   â”œâ”€â”€ defender.py
+â”‚   â”‚   â”œâ”€â”€ firewall.py
+â”‚   â”‚   â”œâ”€â”€ local_admins.py
+â”‚   â”‚   â”œâ”€â”€ bitlocker.py
+â”‚   â”‚   â”œâ”€â”€ windows_update.py
+â”‚   â”‚   â””â”€â”€ open_ports.py
+â”‚   â”‚
+â”‚   â””â”€â”€ report/
+â”‚       â”œâ”€â”€ __init__.py
+â”‚       â”œâ”€â”€ console.py
+â”‚       â””â”€â”€ writer.py
+â”‚
+â”œâ”€â”€ reports/
+â”‚   â””â”€â”€ erzeugte Berichte
+â”‚
+â”œâ”€â”€ README.md
+â””â”€â”€ .gitignore
 ```
 
 ---
 
-## Modulübersicht
+## ModulÃ¼bersicht
 
 ### `src/main.py`
 
@@ -332,7 +332,7 @@ Zentraler Einstiegspunkt des Programms.
 
 Aufgaben:
 
-- startet alle Prüfungen
+- startet alle PrÃ¼fungen
 - erstellt die Gesamtzusammenfassung
 - ruft die Berichtsausgabe auf
 - speichert JSON- und TXT-Berichte
@@ -341,21 +341,21 @@ Aufgaben:
 
 ### `src/core/`
 
-Enthält zentrale Hilfsfunktionen und Konstanten.
+EnthÃ¤lt zentrale Hilfsfunktionen und Konstanten.
 
 | Datei | Aufgabe |
 |---|---|
 | `constants.py` | Statuswerte und Projektpfade |
 | `helpers.py` | JSON-Parsing, Listen-Normalisierung, Statusbewertung |
-| `powershell.py` | Ausführen von PowerShell-Befehlen mit UTF-8-Ausgabe |
+| `powershell.py` | AusfÃ¼hren von PowerShell-Befehlen mit UTF-8-Ausgabe |
 
 ---
 
 ### `src/checks/`
 
-Enthält die einzelnen Sicherheitsprüfungen.
+EnthÃ¤lt die einzelnen SicherheitsprÃ¼fungen.
 
-| Datei | Prüfung |
+| Datei | PrÃ¼fung |
 |---|---|
 | `system_info.py` | Systeminformationen |
 | `defender.py` | Microsoft Defender |
@@ -369,7 +369,7 @@ Enthält die einzelnen Sicherheitsprüfungen.
 
 ### `src/report/`
 
-Enthält Funktionen für Ausgabe und Berichte.
+EnthÃ¤lt Funktionen fÃ¼r Ausgabe und Berichte.
 
 | Datei | Aufgabe |
 |---|---|
@@ -382,7 +382,7 @@ Enthält Funktionen für Ausgabe und Berichte.
 
 ### Version 0.1.0
 
-Erste lauffähige Version mit grundlegenden Checks.
+Erste lauffÃ¤hige Version mit grundlegenden Checks.
 
 ### Version 0.2.0
 
@@ -402,34 +402,34 @@ Erweiterte Portbewertung mit:
 
 ### Version 0.4.0
 
-BitLocker-Prüfung ergänzt.
+BitLocker-PrÃ¼fung ergÃ¤nzt.
 
-Das Tool prüft zusätzlich, ob BitLocker-Volumes vorhanden sind und ob Laufwerke verschlüsselt und geschützt sind.
+Das Tool prÃ¼ft zusÃ¤tzlich, ob BitLocker-Volumes vorhanden sind und ob Laufwerke verschlÃ¼sselt und geschÃ¼tzt sind.
 
 ### Version 0.5.0
 
-Windows-Update-Prüfung ergänzt.
+Windows-Update-PrÃ¼fung ergÃ¤nzt.
 
-Das Tool prüft zusätzlich, ob ausstehende Windows-Softwareupdates vorhanden sind und ob diese sicherheitsrelevant wirken.
+Das Tool prÃ¼ft zusÃ¤tzlich, ob ausstehende Windows-Softwareupdates vorhanden sind und ob diese sicherheitsrelevant wirken.
 
 ### Version 0.6.0
 
 Code modularisiert.
 
-Die Prüfungen, Hilfsfunktionen und Berichtsfunktionen wurden in getrennte Module aufgeteilt. Dadurch ist das Projekt übersichtlicher, wartbarer und besser erweiterbar.
+Die PrÃ¼fungen, Hilfsfunktionen und Berichtsfunktionen wurden in getrennte Module aufgeteilt. Dadurch ist das Projekt Ã¼bersichtlicher, wartbarer und besser erweiterbar.
 
 ### Version 1.0.0
 
 Erste stabile Version des Windows Security Checkers.
 
-Das Tool enthält alle bisherigen Kernprüfungen, eine modulare Code-Struktur sowie eine vollständige deutsche Projektdokumentation.
+Das Tool enthÃ¤lt alle bisherigen KernprÃ¼fungen, eine modulare Code-Struktur sowie eine vollstÃ¤ndige deutsche Projektdokumentation.
 
 ---
 
 ## Rechtlicher Hinweis
 
-Dieses Tool ist ausschließlich für Lernzwecke und defensive Sicherheitsprüfungen gedacht.
+Dieses Tool ist ausschlieÃŸlich fÃ¼r Lernzwecke und defensive SicherheitsprÃ¼fungen gedacht.
 
 Es ersetzt kein professionelles Sicherheitsaudit.
 
-Das Tool darf nur auf eigenen Systemen oder auf Systemen verwendet werden, für die eine ausdrückliche Erlaubnis vorliegt.
+Das Tool darf nur auf eigenen Systemen oder auf Systemen verwendet werden, fÃ¼r die eine ausdrÃ¼ckliche Erlaubnis vorliegt.

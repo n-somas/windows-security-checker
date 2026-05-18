@@ -1,15 +1,15 @@
-from core.constants import STATUS_OK, STATUS_INFO, STATUS_WARNUNG, STATUS_FEHLER
+﻿from core.constants import STATUS_OK, STATUS_INFO, STATUS_WARNUNG, STATUS_FEHLER
 from core.helpers import json_ausgabe_umwandeln, liste_erzwingen
 from core.powershell import powershell_ausfuehren
 
 
 def windows_updates_pruefen() -> dict:
     """
-    Prüft den Windows-Update-Status.
+    PrÃ¼ft den Windows-Update-Status.
 
     Das Tool verwendet die Windows Update COM-Schnittstelle.
-    Es wird geprüft, ob ausstehende Softwareupdates vorhanden sind.
-    Zusätzlich wird das zuletzt installierte Hotfix-Update ausgelesen.
+    Es wird geprÃ¼ft, ob ausstehende Softwareupdates vorhanden sind.
+    ZusÃ¤tzlich wird das zuletzt installierte Hotfix-Update ausgelesen.
     """
     powershell_befehl = """
     $updateSession = New-Object -ComObject Microsoft.Update.Session
@@ -55,9 +55,9 @@ def windows_updates_pruefen() -> dict:
             "status": STATUS_FEHLER,
             "ergebnis": daten,
             "bewertung": (
-                "Der Windows-Update-Status konnte nicht geprüft werden. "
-                "Möglicherweise ist der Windows-Update-Dienst nicht verfügbar "
-                "oder die Prüfung hat zu lange gedauert."
+                "Der Windows-Update-Status konnte nicht geprÃ¼ft werden. "
+                "MÃ¶glicherweise ist der Windows-Update-Dienst nicht verfÃ¼gbar "
+                "oder die PrÃ¼fung hat zu lange gedauert."
             ),
             "fehler": ergebnis["fehler"],
         }

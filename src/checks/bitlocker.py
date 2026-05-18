@@ -1,11 +1,11 @@
-from core.constants import STATUS_OK, STATUS_INFO, STATUS_WARNUNG, STATUS_FEHLER
+﻿from core.constants import STATUS_OK, STATUS_INFO, STATUS_WARNUNG, STATUS_FEHLER
 from core.helpers import json_ausgabe_umwandeln, liste_erzwingen, hoechsten_status_ermitteln
 from core.powershell import powershell_ausfuehren
 
 
 def bitlocker_pruefen() -> dict:
     """
-    Prüft den BitLocker-Status der vorhandenen Laufwerke.
+    PrÃ¼ft den BitLocker-Status der vorhandenen Laufwerke.
     """
     powershell_befehl = """
     $volumes = Get-BitLockerVolume |
@@ -28,9 +28,9 @@ def bitlocker_pruefen() -> dict:
             "status": STATUS_FEHLER,
             "ergebnis": daten,
             "bewertung": (
-                "Der BitLocker-Status konnte nicht geprüft werden. "
-                "Möglicherweise ist BitLocker auf dieser Windows-Edition nicht verfügbar "
-                "oder der Befehl benötigt erhöhte Rechte."
+                "Der BitLocker-Status konnte nicht geprÃ¼ft werden. "
+                "MÃ¶glicherweise ist BitLocker auf dieser Windows-Edition nicht verfÃ¼gbar "
+                "oder der Befehl benÃ¶tigt erhÃ¶hte Rechte."
             ),
             "fehler": ergebnis["fehler"],
         }
@@ -70,19 +70,19 @@ def bitlocker_pruefen() -> dict:
             and encryption_percentage == 100
         ):
             status = STATUS_OK
-            hinweis = "Das Laufwerk ist vollständig verschlüsselt und der Schutz ist aktiv."
+            hinweis = "Das Laufwerk ist vollstÃ¤ndig verschlÃ¼sselt und der Schutz ist aktiv."
         elif volume_status in {"EncryptionInProgress", "EncryptionPaused"}:
             status = STATUS_INFO
-            hinweis = "Die Verschlüsselung ist gestartet, aber noch nicht vollständig abgeschlossen."
+            hinweis = "Die VerschlÃ¼sselung ist gestartet, aber noch nicht vollstÃ¤ndig abgeschlossen."
         elif protection_status == "Off":
             status = STATUS_WARNUNG
-            hinweis = "Der BitLocker-Schutz ist deaktiviert oder das Laufwerk ist nicht geschützt."
+            hinweis = "Der BitLocker-Schutz ist deaktiviert oder das Laufwerk ist nicht geschÃ¼tzt."
         elif volume_status == "FullyDecrypted":
             status = STATUS_WARNUNG
-            hinweis = "Das Laufwerk ist nicht verschlüsselt."
+            hinweis = "Das Laufwerk ist nicht verschlÃ¼sselt."
         else:
             status = STATUS_WARNUNG
-            hinweis = "Der BitLocker-Status ist nicht eindeutig und sollte manuell geprüft werden."
+            hinweis = "Der BitLocker-Status ist nicht eindeutig und sollte manuell geprÃ¼ft werden."
 
         volume_bewertungen.append(
             {
@@ -104,10 +104,10 @@ def bitlocker_pruefen() -> dict:
     anzahl_warnung = sum(1 for volume in volume_bewertungen if volume["status"] == STATUS_WARNUNG)
 
     if gesamtstatus == STATUS_OK:
-        bewertung = "Alle geprüften Laufwerke sind vollständig verschlüsselt und geschützt."
+        bewertung = "Alle geprÃ¼ften Laufwerke sind vollstÃ¤ndig verschlÃ¼sselt und geschÃ¼tzt."
     else:
         bewertung = (
-            f"Es wurden {len(volume_bewertungen)} Laufwerke geprüft: "
+            f"Es wurden {len(volume_bewertungen)} Laufwerke geprÃ¼ft: "
             f"{anzahl_ok} OK, {anzahl_info} Info, {anzahl_warnung} Warnung."
         )
 

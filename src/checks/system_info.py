@@ -1,4 +1,4 @@
-import platform
+﻿import platform
 
 from core.constants import STATUS_OK, STATUS_FEHLER
 from core.helpers import json_ausgabe_umwandeln

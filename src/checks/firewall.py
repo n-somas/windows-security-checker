@@ -1,11 +1,11 @@
-from core.constants import STATUS_OK, STATUS_WARNUNG, STATUS_FEHLER
+﻿from core.constants import STATUS_OK, STATUS_WARNUNG, STATUS_FEHLER
 from core.helpers import json_ausgabe_umwandeln, liste_erzwingen
 from core.powershell import powershell_ausfuehren
 
 
 def firewall_pruefen() -> dict:
     """
-    Prüft die Windows-Firewall-Profile.
+    PrÃ¼ft die Windows-Firewall-Profile.
     """
     powershell_befehl = """
     Get-NetFirewallProfile |
@@ -21,7 +21,7 @@ def firewall_pruefen() -> dict:
             "pruefung": "Windows-Firewall",
             "status": STATUS_FEHLER,
             "ergebnis": daten,
-            "bewertung": "Die Windows-Firewall konnte nicht geprüft werden.",
+            "bewertung": "Die Windows-Firewall konnte nicht geprÃ¼ft werden.",
             "fehler": ergebnis["fehler"],
         }
 

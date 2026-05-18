@@ -1,9 +1,9 @@
-import subprocess
+﻿import subprocess
 
 
 def powershell_ausfuehren(befehl: str, timeout: int = 30) -> dict:
     """
-    Führt einen PowerShell-Befehl aus.
+    FÃ¼hrt einen PowerShell-Befehl aus.
 
     Die PowerShell-Ausgabe wird bewusst als UTF-8 verarbeitet.
     Dadurch werden Encoding-Probleme mit deutschen oder speziellen Zeichen vermieden.

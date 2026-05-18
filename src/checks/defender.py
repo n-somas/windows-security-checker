@@ -1,11 +1,11 @@
-from core.constants import STATUS_OK, STATUS_WARNUNG, STATUS_FEHLER
+﻿from core.constants import STATUS_OK, STATUS_WARNUNG, STATUS_FEHLER
 from core.helpers import json_ausgabe_umwandeln
 from core.powershell import powershell_ausfuehren
 
 
 def windows_defender_pruefen() -> dict:
     """
-    Prüft den Status von Microsoft Defender.
+    PrÃ¼ft den Status von Microsoft Defender.
     """
     powershell_befehl = """
     Get-MpComputerStatus |
@@ -27,7 +27,7 @@ def windows_defender_pruefen() -> dict:
             "pruefung": "Microsoft Defender",
             "status": STATUS_FEHLER,
             "ergebnis": daten,
-            "bewertung": "Microsoft Defender konnte nicht geprüft werden.",
+            "bewertung": "Microsoft Defender konnte nicht geprÃ¼ft werden.",
             "fehler": ergebnis["fehler"],
         }
 
@@ -58,10 +58,10 @@ def windows_defender_pruefen() -> dict:
         bewertung = "Microsoft Defender ist aktiv, aber der Echtzeitschutz ist deaktiviert."
     elif not antivirus_aktiv:
         status = STATUS_WARNUNG
-        bewertung = "Microsoft Defender ist nicht aktiv. Prüfe, ob ein anderes Antivirus-Programm verwendet wird."
+        bewertung = "Microsoft Defender ist nicht aktiv. PrÃ¼fe, ob ein anderes Antivirus-Programm verwendet wird."
     else:
         status = STATUS_WARNUNG
-        bewertung = "Der Defender-Status ist nicht eindeutig. Die Details sollten manuell geprüft werden."
+        bewertung = "Der Defender-Status ist nicht eindeutig. Die Details sollten manuell geprÃ¼ft werden."
 
     return {
         "pruefung": "Microsoft Defender",

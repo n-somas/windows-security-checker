@@ -1,4 +1,4 @@
-from core.constants import STATUS_FEHLER
+﻿from core.constants import STATUS_FEHLER
 
 
 def zusammenfassung_ausgeben(bericht: dict) -> None:
@@ -56,7 +56,7 @@ def bitlocker_laufwerke_ausgeben(pruefung: dict) -> None:
         print(
             f"     - {volume.get('status')}: Laufwerk {volume.get('laufwerk')}, "
             f"Schutz: {volume.get('protection_status')}, "
-            f"Verschlüsselung: {volume.get('encryption_percentage')} %"
+            f"VerschlÃ¼sselung: {volume.get('encryption_percentage')} %"
         )
         print(f"       {volume.get('hinweis')}")
 

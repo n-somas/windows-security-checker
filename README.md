@@ -23,6 +23,8 @@ Das Tool prüft aktuell:
 
 Die Ergebnisse werden in der Konsole angezeigt und zusätzlich als Bericht gespeichert.
 
+Seit Version **0.6.0** ist der Code modular aufgebaut. Die einzelnen Prüfungen, Hilfsfunktionen und Berichtsfunktionen sind in getrennte Module ausgelagert.
+
 ---
 
 ## Ziel des Projekts
@@ -39,6 +41,7 @@ Es zeigt Kenntnisse in:
 - Windows-Update-Auswertung
 - Port-Analyse
 - Berichtserstellung
+- modularem Codeaufbau
 - Git- und GitHub-Projektstruktur
 
 ---
@@ -74,7 +77,7 @@ python src/main.py
 ```text
 Windows Security Checker
 ==============================
-Version: 0.5.0
+Version: 0.6.0
 
 OK - Systeminformationen
      Die Systeminformationen wurden erfolgreich ausgelesen.
@@ -91,17 +94,17 @@ OK - Lokale Administratoren
 WARNUNG - BitLocker
      Es wurden keine BitLocker-Volumes gefunden.
 
-WARNUNG - Windows Update
-     Es wurden 1 ausstehende Windows-Updates gefunden. Davon wirken 1 sicherheitsrelevant.
+OK - Windows Update
+     Es wurden keine ausstehenden Windows-Softwareupdates gefunden.
 
 INFO - Offene TCP-Ports
      Es wurden offene TCP-Ports gefunden. Bekannte Ports wurden bewertet.
 
 Zusammenfassung
 ------------------------------
-OK: 3
+OK: 4
 Info: 1
-Warnungen: 3
+Warnungen: 2
 Kritisch: 0
 Fehler: 0
 ```
@@ -254,8 +257,8 @@ Es werden zwei Formate erzeugt:
 Beispiel:
 
 ```text
-reports/sicherheitsbericht_2026-05-18_09-48-07.json
-reports/sicherheitsbericht_2026-05-18_09-48-07.txt
+reports/sicherheitsbericht_2026-05-18_10-14-42.json
+reports/sicherheitsbericht_2026-05-18_10-14-42.txt
 ```
 
 ---
@@ -287,7 +290,28 @@ Der Ordner `reports` ist über `.gitignore` ausgeschlossen.
 windows-security-checker/
 │
 ├── src/
-│   └── main.py
+│   ├── main.py
+│   │
+│   ├── core/
+│   │   ├── __init__.py
+│   │   ├── constants.py
+│   │   ├── helpers.py
+│   │   └── powershell.py
+│   │
+│   ├── checks/
+│   │   ├── __init__.py
+│   │   ├── system_info.py
+│   │   ├── defender.py
+│   │   ├── firewall.py
+│   │   ├── local_admins.py
+│   │   ├── bitlocker.py
+│   │   ├── windows_update.py
+│   │   └── open_ports.py
+│   │
+│   └── report/
+│       ├── __init__.py
+│       ├── console.py
+│       └── writer.py
 │
 ├── reports/
 │   └── erzeugte Berichte
@@ -295,6 +319,60 @@ windows-security-checker/
 ├── README.md
 └── .gitignore
 ```
+
+---
+
+## Modulübersicht
+
+### `src/main.py`
+
+Zentraler Einstiegspunkt des Programms.
+
+Aufgaben:
+
+- startet alle Prüfungen
+- erstellt die Gesamtzusammenfassung
+- ruft die Berichtsausgabe auf
+- speichert JSON- und TXT-Berichte
+
+---
+
+### `src/core/`
+
+Enthält zentrale Hilfsfunktionen und Konstanten.
+
+| Datei | Aufgabe |
+|---|---|
+| `constants.py` | Statuswerte und Projektpfade |
+| `helpers.py` | JSON-Parsing, Listen-Normalisierung, Statusbewertung |
+| `powershell.py` | Ausführen von PowerShell-Befehlen mit UTF-8-Ausgabe |
+
+---
+
+### `src/checks/`
+
+Enthält die einzelnen Sicherheitsprüfungen.
+
+| Datei | Prüfung |
+|---|---|
+| `system_info.py` | Systeminformationen |
+| `defender.py` | Microsoft Defender |
+| `firewall.py` | Windows-Firewall |
+| `local_admins.py` | lokale Administratoren |
+| `bitlocker.py` | BitLocker |
+| `windows_update.py` | Windows Update |
+| `open_ports.py` | offene TCP-Ports |
+
+---
+
+### `src/report/`
+
+Enthält Funktionen für Ausgabe und Berichte.
+
+| Datei | Aufgabe |
+|---|---|
+| `console.py` | Konsolenausgabe |
+| `writer.py` | JSON- und TXT-Berichte speichern |
 
 ---
 
@@ -331,6 +409,12 @@ Das Tool prüft zusätzlich, ob BitLocker-Volumes vorhanden sind und ob Laufwerk
 Windows-Update-Prüfung ergänzt.
 
 Das Tool prüft zusätzlich, ob ausstehende Windows-Softwareupdates vorhanden sind und ob diese sicherheitsrelevant wirken.
+
+### Version 0.6.0
+
+Code modularisiert.
+
+Die Prüfungen, Hilfsfunktionen und Berichtsfunktionen wurden in getrennte Module aufgeteilt. Dadurch ist das Projekt übersichtlicher, wartbarer und besser erweiterbar.
 
 ---
 
